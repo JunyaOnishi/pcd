@@ -3,10 +3,10 @@ alias{
         local command
         local path
         if arg[1] then
-            command = string.format("%s", arg[1])
+            command = arg[1]
         end
         if arg[2] then
-            path = string.format("%s", arg[2])
+            path = arg[2]
         end
         if command == "add" then
             pathchanger(path)
@@ -28,24 +28,30 @@ alias{
 
 -- .pcd_listファイルを探す関数
 function pathchanger(path)
-    local current = path or nyagos.getwd() -- パスが指定されていなければnilを
-    local cpath = slashChanger(nyagos.getwd()) -- \→変換
-    cpath = cpathAddSlash(cpath)
-    current = slashChanger(current)
-    if string.match(current, nyagos.getwd()) or string.match(current, cpath) then
-        current = slashChanger(current)
-        addfolder(current)
+    local current = path
+    local cpath = cpathAddSlash(slashChanger(nyagos.getwd()))
+    if current == nil then
+        current = nyagos.getwd()
+    end
+    current = cpathAddSlash(slashChanger(current))
+    if string.match(current, "("..cpath..")") then
+        existsDirectory(current)
     else
-        current = cpath..current.."/"
-        f = io.open(current.."/.test", "w+")
-        if f then
-            io.output(f):write("test")
-            addfolder(current)
-            io.close(f)
-            os.remove(current.."/.test")
-        else
-            print("'"..current.."' no such directory. ")
-        end
+        current = cpath..current
+        existsDirectory(current)
+    end
+end
+
+-- ディレクトリの存在チェック
+function existsDirectory(current)
+    local f = io.open(current.."/.test", "w+")
+    if f then
+        io.output(f):write("test")
+        addfolder(current)
+        io.close(f)
+        os.remove(current.."/.test")
+    else
+        print("'"..current.."' no such directory. ")
     end
 end
 
